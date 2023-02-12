@@ -17,7 +17,10 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
@@ -48,17 +51,21 @@ public class Webview extends AppCompatActivity {
 
         preferences = getPreferences(Context.MODE_PRIVATE);
 
-        if (preferences.contains(keyURL)) {
-            exeIfSavedURL(savedInstanceState);
-        } else {
-            URL = getURLFromGoogleService();
-            if (URL.equals("") || isEmulator() || isThereSim()) {
-                startMainActivity();
-            } else {
-                saveURL(URL);
-                startWebview(valueURL, savedInstanceState);
-            }
-        }
+        String configURL = getURLFromGoogleService();
+        System.out.println("configURL - " + configURL);
+        startWebview(configURL, savedInstanceState);
+
+//        if (preferences.contains(keyURL)) {
+//            exeIfSavedURL(savedInstanceState);
+//        } else {
+//            URL = getURLFromGoogleService();
+//            if (URL.equals("") || isEmulator() || isThereSim()) {
+//                startMainActivity();
+//            } else {
+//                saveURL(URL);
+//                startWebview(valueURL, savedInstanceState);
+//            }
+//        }
     }
 
 
@@ -130,7 +137,18 @@ public class Webview extends AppCompatActivity {
         FirebaseRemoteConfig config = FirebaseRemoteConfig.getInstance();
         FirebaseRemoteConfigSettings settings = new FirebaseRemoteConfigSettings.Builder().build();
         config.setConfigSettingsAsync(settings);
-        return config.getString("url");
+        String configURL = config.getString("url");
+        config.fetchAndActivate()
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(Webview.this, "Fetch and activate succeeded",
+                                Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(Webview.this, "Fetch failed",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+        return configURL;
     }
 
     private boolean isEmulator() {
