@@ -1,0 +1,18 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    ext {
+        app_version = '7.2.0-alpha06'
+        lib_version = '7.2.0-alpha06'
+        gms_version = '4.3.15'
+    }
+}
+
+plugins {
+    id 'com.android.application' version "$app_version" apply false
+    id 'com.android.library' version "$lib_version" apply false
+    id 'com.google.gms.google-services' version "$gms_version" apply false
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
